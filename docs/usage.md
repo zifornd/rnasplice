@@ -25,6 +25,14 @@ CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz,f
 CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz,forward,control
 ```
 
+The samplesheet given below specifies the format for single end data.
+
+``` console
+sample,fastq_1,fastq_2,strandedness,condition
+CONTROL_1,SRR031708.fastq.gz,,forward,control
+CONTROL_2,SRR031709.fastq.gz,,forward,control
+CONTROL_P3,SRR031710.fastq.gz,,forward,control
+
 The samplesheet can have as many columns as you desire, however, there is a strict requirement for at least 3 columns to match those defined in the table below.
 
 | Column              | Description                                                                                                                                                                            |
@@ -237,6 +245,19 @@ SUPPA then reads the `PSI` for the events and the transcript expression values f
 #### Cluster Analysis
 
 Using `dpsi` file and `psivec` file, events are clustered according to `PSI` values across conditions.
+
+## Post-processing
+
+Post-processing steps are done to prepare data for visualization and detailed analysis of splicing events.
+BEDTtools and MISO are utilized to create BigWig files and Sashimi plots.
+
+The paramater `--miso_genes` or `--miso_genes_file` can be used to specify the input genes sets.
+
+Prepare the input files according to the following specifications:
+
+-   The file should be in CSV format.
+-   All gene values must be placed in first column.
+-   The file should not contain a header row.
 
 ## Running the pipeline
 
