@@ -34,7 +34,7 @@ workflow DEXSEQ_DEU {
             aggregation
         )
 
-        ch_versions = ch_versions.mix(DEXSEQ_ANNOTATION.out.versions.first())
+        ch_versions = ch_versions.mix(DEXSEQ_ANNOTATION.out.versions)
 
         ch_dexseq_gff = DEXSEQ_ANNOTATION.out.gff
 
@@ -51,7 +51,7 @@ workflow DEXSEQ_DEU {
         alignment_quality
     )
 
-    ch_versions = ch_versions.mix(DEXSEQ_COUNT.out.versions.first())
+    ch_versions = ch_versions.mix(DEXSEQ_COUNT.out.versions)
 
     //
     // MODULE: DEXSeq DEU

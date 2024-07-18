@@ -33,7 +33,7 @@ workflow EDGER_DEU {
 
     SUBREAD_FEATURECOUNTS(ch_feature_counts)
 
-    ch_versions = ch_versions.mix(SUBREAD_FEATURECOUNTS.out.versions.first())
+    ch_versions = ch_versions.mix(SUBREAD_FEATURECOUNTS.out.versions)
 
     //
     // MODULE: EDGER_COUNTS AND PLOT
