@@ -32,6 +32,7 @@ sample,fastq_1,fastq_2,strandedness,condition
 CONTROL_1,SRR031708.fastq.gz,,forward,control
 CONTROL_2,SRR031709.fastq.gz,,forward,control
 CONTROL_P3,SRR031710.fastq.gz,,forward,control
+```
 
 The samplesheet can have as many columns as you desire, however, there is a strict requirement for at least 3 columns to match those defined in the table below.
 
