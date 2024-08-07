@@ -82,6 +82,12 @@ class WorkflowRnasplice {
             }
         }
 
+        if (params.sashimi_plot) {
+            if (params.miso_genes == null && params.miso_genes_file == null) {
+                Nextflow.error("If Sashimi plot is set to true please provide input for Miso genes or Miso genes file!")
+            }
+        }
+
     }
 
     //

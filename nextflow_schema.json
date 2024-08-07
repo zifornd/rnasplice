@@ -650,17 +650,17 @@
             "properties": {
                 "sashimi_plot": {
                     "type": "boolean",
-                    "default":"True",
+                    "default":false,
                     "description": "Create sashimi plots using MISO."
                 },
                 "miso_genes": {
                     "type": "string",
-                    "default": "ENSG00000004961, ENSG00000005302",
-                    "description": "List containing identifiers of genes to plot."
+                    "default": null,
+                    "description": "Comma separated list containing identifiers of genes to plot."
                 },
                 "miso_genes_file": {
                     "type": "string",
-                    "description": "New-line separate file containing identifiers of genes to plot."
+                    "description": "New-line separated file containing identifiers of genes to plot."
                 },
                 "miso_read_len": {
                     "type": "integer",
