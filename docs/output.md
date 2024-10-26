@@ -36,6 +36,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - Differential Transcript Usage (DTU).
   - [DRIMSeq](#drimseq) - Filtering of genes and features prior to DTU.
   - [DEXSeq](#dexseq-1) - For differential transcript usage analysis following Salmon pseudo-alignment and quantification.
+  - [IsoformSwitchAnalyzeR](#IsoformSwitchAnalyzeR) - For isoform switch analysis following Salmon pseudo-alignment.
 - Event-based Differential Splicing analysis.
   - [rMats](#rmats) - Designed for detection of differential alternative splicing from replicate RNA-Seq data.
   - [SUPPA2](#suppa2) - Differential splicing analysis across multiple conditions at local event based and transcript isoform level following Salmon pseuodo-alignment and quantification.
@@ -405,7 +406,7 @@ Finally, this portion of the pipeline will run [stageR](https://bioconductor.org
 
 </details>
 
-If [IsoformSwitchAnalyzeR](https://www.bioconductor.org/packages/release/bioc/html/IsoformSwitchAnalyzeR.html) finds genes with isoform switches it produces plots visualizing these switches. A separate set of switch plots is created for each contrast if that contrast contains significant switches. Further two .csv files are created, a summary and the main results. The .rds of the main R list gets also returned.
+If [IsoformSwitchAnalyzeR](https://www.bioconductor.org/packages/release/bioc/html/IsoformSwitchAnalyzeR.html) finds genes with isoform switches, it produces plots visualizing these switches. A separate set of switch plots is created for each contrast if that contrast contains significant switches. Further two .csv files are created, a summary and the main results. The .rds of the main R list is also returned.
 
 ## Event-based analysis
 
