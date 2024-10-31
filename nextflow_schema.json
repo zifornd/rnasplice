@@ -789,7 +789,7 @@
             },
             "fa_icon": "far fa-chart-bar"
         },
-    "isoformswitchanalyzer": {
+        "isoformswitchanalyzer": {
             "title": "isoformswitchanalyzer options",
             "type": "object",
             "description": "",
@@ -810,7 +810,7 @@
                     "default": 0.1,
                     "description": "dIF cutoff value for differential isoform expression"
                 }
-            }    
+            }
         }
     },
     "allOf": [

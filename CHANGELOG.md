@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added IsoformSwitchAnalyzeR to pipeline.
 - Updated to migrate from nf-validation to nf-schema.
 - Updated to remove max_memory, max_cpus, max_time and replace with process resourceLimits.
-- Updated for nf-core template version 3.0.2. 
+- Updated for nf-core template version 3.0.2.
 
 ## v1.0.4 - 2024-04-21
 
