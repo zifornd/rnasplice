@@ -7,9 +7,12 @@ on:
   pull_request:
   release:
     types: [published]
+  workflow_dispatch:
 
 env:
   NXF_ANSI_LOG: false
+  NXF_SINGULARITY_CACHEDIR: ${{ github.workspace }}/.singularity
+  NXF_SINGULARITY_LIBRARYDIR: ${{ github.workspace }}/.singularity
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
@@ -17,208 +20,66 @@ concurrency:
 
 jobs:
   test:
-    name: Run full pipeline with test data
+    name: "Run pipeline with test data (${{ matrix.NXF_VER }} | ${{ matrix.test_name }} | ${{ matrix.profile }})"
     # Only run on push if this is the nf-core dev branch (merged PRs)
     if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/rnasplice') }}"
     runs-on: ubuntu-latest
     strategy:
       matrix:
         NXF_VER:
-          - "23.04.0"
+          - "24.04.2"
           - "latest-everything"
+        profile:
+          - "conda"
+          - "docker"
+          - "singularity"
+        test_name:
+          - "test"
+        isMaster:
+          - ${{ github.base_ref == 'master' }}
+        # Exclude conda and singularity on dev
+        exclude:
+          - isMaster: false
+            profile: "conda"
+          - isMaster: false
+            profile: "singularity"
     steps:
       - name: Check out pipeline code
-        uses: actions/checkout@v4
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
 
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v1
+      - name: Set up Nextflow
+        uses: nf-core/setup-nextflow@v2
         with:
           version: "${{ matrix.NXF_VER }}"
 
-      - name: Run full pipeline with test data
+      - name: Set up Apptainer
+        if: matrix.profile == 'singularity'
+        uses: eWaterCycle/setup-apptainer@main
+
+      - name: Set up Singularity
+        if: matrix.profile == 'singularity'
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --outdir ./results
+          mkdir -p $NXF_SINGULARITY_CACHEDIR
+          mkdir -p $NXF_SINGULARITY_LIBRARYDIR
 
-  test_dexseq:
-    name: Run DEXSeq pipeline with test data
-    # Only run on push if this is the nf-core dev branch (merged PRs)
-    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/rnasplice') }}"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        NXF_VER:
-          - "23.04.0"
-          - "latest-everything"
-    steps:
-      - name: Check out pipeline code
-        uses: actions/checkout@v3
-
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v1
+      - name: Set up Miniconda
+        if: matrix.profile == 'conda'
+        uses: conda-incubator/setup-miniconda@a4260408e20b96e80095f42ff7f1a15b27dd94ca # v3
         with:
-          version: "${{ matrix.NXF_VER }}"
+          miniconda-version: "latest"
+          auto-update-conda: true
+          conda-solver: libmamba
+          channels: conda-forge,bioconda
 
-      - name: Run DEXSeq pipeline with test data
+      - name: Set up Conda
+        if: matrix.profile == 'conda'
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test_dexseq,docker --outdir ./results
+          echo $(realpath $CONDA)/condabin >> $GITHUB_PATH
+          echo $(realpath python) >> $GITHUB_PATH
 
-  test_edger:
-    name: Run edgeR pipeline with test data
-    # Only run on push if this is the nf-core dev branch (merged PRs)
-    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/rnasplice') }}"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        NXF_VER:
-          - "23.04.0"
-          - "latest-everything"
-    steps:
-      - name: Check out pipeline code
-        uses: actions/checkout@v3
+      - name: Clean up Disk space
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
 
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v1
-        with:
-          version: "${{ matrix.NXF_VER }}"
-
-      - name: Run edgeR pipeline with test data
+      - name: "Run pipeline with test data ${{ matrix.NXF_VER }} | ${{ matrix.test_name }} | ${{ matrix.profile }}"
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test_edger,docker --outdir ./results
-
-  test_rmats:
-    name: Run rMATS pipeline with test data
-    # Only run on push if this is the nf-core dev branch (merged PRs)
-    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/rnasplice') }}"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        NXF_VER:
-          - "23.04.0"
-          - "latest-everything"
-    steps:
-      - name: Check out pipeline code
-        uses: actions/checkout@v3
-
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v1
-        with:
-          version: "${{ matrix.NXF_VER }}"
-
-      - name: Run rMATS pipeline with test data
-        run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test_rmats,docker --outdir ./results
-
-  test_suppa:
-    name: Run SUPPA pipeline with test data
-    # Only run on push if this is the nf-core dev branch (merged PRs)
-    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/rnasplice') }}"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        NXF_VER:
-          - "23.04.0"
-          - "latest-everything"
-    steps:
-      - name: Check out pipeline code
-        uses: actions/checkout@v3
-
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v1
-        with:
-          version: "${{ matrix.NXF_VER }}"
-
-      - name: Run SUPPA pipeline with test data
-        run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test_suppa,docker --outdir ./results
-
-  test_fastq:
-    name: Run full pipeline with FASTQ data
-    # Only run on push if this is the nf-core dev branch (merged PRs)
-    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/rnasplice') }}"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        NXF_VER:
-          - "23.04.0"
-          - "latest-everything"
-    steps:
-      - name: Check out pipeline code
-        uses: actions/checkout@v3
-
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v1
-        with:
-          version: "${{ matrix.NXF_VER }}"
-
-      - name: Run full pipeline with FASTQ data
-        run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test_fastq,docker --outdir ./results
-
-  test_genome_bam:
-    name: Run full pipeline with genome BAM data
-    # Only run on push if this is the nf-core dev branch (merged PRs)
-    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/rnasplice') }}"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        NXF_VER:
-          - "23.04.0"
-          - "latest-everything"
-    steps:
-      - name: Check out pipeline code
-        uses: actions/checkout@v3
-
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v1
-        with:
-          version: "${{ matrix.NXF_VER }}"
-
-      - name: Run full pipeline with genome BAM data
-        run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test_genome_bam,docker --outdir ./results
-
-  test_transcriptome_bam:
-    name: Run full pipeline with transcriptome BAM data
-    # Only run on push if this is the nf-core dev branch (merged PRs)
-    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/rnasplice') }}"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        NXF_VER:
-          - "23.04.0"
-          - "latest-everything"
-    steps:
-      - name: Check out pipeline code
-        uses: actions/checkout@v3
-
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v1
-        with:
-          version: "${{ matrix.NXF_VER }}"
-
-      - name: Run full pipeline with transcriptome BAM data
-        run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test_transcriptome_bam,docker --outdir ./results
-
-  test_salmon_results:
-    name: Run full pipeline with Salmon results data
-    # Only run on push if this is the nf-core dev branch (merged PRs)
-    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/rnasplice') }}"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        NXF_VER:
-          - "23.04.0"
-          - "latest-everything"
-    steps:
-      - name: Check out pipeline code
-        uses: actions/checkout@v3
-
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v1
-        with:
-          version: "${{ matrix.NXF_VER }}"
-
-      - name: Run full pipeline with Salmon results data
-        run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test_salmon_results,docker --outdir ./results
+          nextflow run ${GITHUB_WORKSPACE} -profile ${{ matrix.test_name }},${{ matrix.profile }} --outdir ./results
