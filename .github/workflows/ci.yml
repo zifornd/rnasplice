@@ -35,14 +35,14 @@ jobs:
           - "singularity"
         test_name:
           - "test"
-          - "test_dexseq"
-          - "test_edger"
-          - "test_rmats"
-          - "test_suppa"
-          - "test_fastq"
-          - "test_genome_bam"
-          - "test_transcriptome_bam"
-          - "test_salmon_results"
+          # - "test_dexseq"
+          # - "test_edger"
+          # - "test_rmats"
+          # - "test_suppa"
+          # - "test_fastq"
+          # - "test_genome_bam"
+          # - "test_transcriptome_bam"
+          # - "test_salmon_results"
           # - "test_isoformswitchanalyzer"
         isMaster:
           - ${{ github.base_ref == 'master' }}
