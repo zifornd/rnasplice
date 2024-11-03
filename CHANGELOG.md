@@ -3,12 +3,13 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.0.5 - 2024-06-04
+## v1.0.5 - 2024-11-03
 
 - Added IsoformSwitchAnalyzeR to pipeline.
 - Updated to migrate from nf-validation to nf-schema.
 - Updated to remove max_memory, max_cpus, max_time and replace with process resourceLimits.
 - Updated for nf-core template version 3.0.2.
+- Updated to remove lib folder and add utils subworkflows.
 
 ## v1.0.4 - 2024-04-21
 
