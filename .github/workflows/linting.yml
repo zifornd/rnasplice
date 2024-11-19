@@ -105,10 +105,6 @@ jobs:
           path: |
             lint_log.txt,lint_results.md,PR_number.txt
             
-  merge:
-    runs-on: ubuntu-latest
-    needs: upload
-    steps:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v4
         with:
