@@ -9,7 +9,8 @@ import os
 import gzip
 import shutil
 
-def main(options,libl):
+
+def main(options, libl):
 
     if options.cluster is None:
         pool_junc_reads(libl, options)
@@ -19,6 +20,7 @@ def main(options,libl):
     merge_junctions(options)
     get_numers(options)
 
+
 def pool_junc_reads(flist, options):
 
     outPrefix = options.outprefix
@@ -26,9 +28,9 @@ def pool_junc_reads(flist, options):
     maxIntronLen = int(options.maxintronlen)
     nochromcheck = options.nochromcheck
 
-    outFile = "%s/%s_pooled"%(rundir,outPrefix)
+    outFile = "%s/%s_pooled" % (rundir, outPrefix)
 
-    chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']+["%d"%x for x in range(1,23)]+['X','Y']
+    chromLst = ["chr%d" % x for x in range(1, 23)] + ["chrX", "chrY"] + ["%d" % x for x in range(1, 23)] + ["X", "Y"]
     by_chrom = {}
 
     # check that all files exist
@@ -36,15 +38,15 @@ def pool_junc_reads(flist, options):
         if not os.path.isfile(libl.strip()):
             raise ValueError("File %s does not exist." % lib)
 
-    for k,libl in enumerate(flist, 1):
+    for k, libl in enumerate(flist, 1):
         lib = libl.strip()
         if options.verbose:
             sys.stderr.write("scanning %d/%d: %s ...\n" % (k, len(flist), lib))
 
-        if lib.endswith('.gz'):
-            opener = gzip.open(lib, 'rt')
+        if lib.endswith(".gz"):
+            opener = gzip.open(lib, "rt")
         else:
-            opener = open(lib, 'r')
+            opener = open(lib, "r")
 
         for ln in opener:
             lnsplit = ln.split()
@@ -56,33 +58,39 @@ def pool_junc_reads(flist, options):
                 print(ln)
                 continue
             # regtools -s 0 (unstranded) now puts "?" in strand field when strand is ambiguous
-            if strand == "?": continue
-            if not nochromcheck and (chrom not in chromLst): continue  # excludes ALT contigs etc
+            if strand == "?":
+                continue
+            if not nochromcheck and (chrom not in chromLst):
+                continue  # excludes ALT contigs etc
             Aoff, Boff = blockSize.split(",")
-            A, B = int(A)+int(Aoff), int(B)-int(Boff)+1
+            A, B = int(A) + int(Aoff), int(B) - int(Boff) + 1
 
-            if B-A > int(maxIntronLen): continue
-            try: by_chrom[(chrom,strand)][(A,B)] = int(counts) + by_chrom[(chrom,strand)][(A,B)]
+            if B - A > int(maxIntronLen):
+                continue
+            try:
+                by_chrom[(chrom, strand)][(A, B)] = int(counts) + by_chrom[(chrom, strand)][(A, B)]
             except:
-                try: by_chrom[(chrom,strand)][(A,B)] = int(counts)
-                except: by_chrom[(chrom,strand)] = {(A,B):int(counts)}
+                try:
+                    by_chrom[(chrom, strand)][(A, B)] = int(counts)
+                except:
+                    by_chrom[(chrom, strand)] = {(A, B): int(counts)}
 
-    fout = open(outFile, 'w')
+    fout = open(outFile, "w")
     Ncluster = 0
     sys.stderr.write("Parsing...\n")
     for chrom in by_chrom:
-        read_ks = [k for k,v in list(by_chrom[chrom].items()) if v >= 3] # a junction must have at least 3 reads
+        read_ks = [k for k, v in list(by_chrom[chrom].items()) if v >= 3]  # a junction must have at least 3 reads
         read_ks.sort()
         sys.stderr.write("%s:%s.." % chrom)
         if len(read_ks) == 0:
-             continue # weird test case for toy data with only 1 gene - two chroms but one is empty after filtering
+            continue  # weird test case for toy data with only 1 gene - two chroms but one is empty after filtering
         clu = cluster_intervals(read_ks)[0]
         for cl in clu:
-            if len(cl) > 1: # if cluster has more than one intron
-                buf = '%s:%s '%chrom
+            if len(cl) > 1:  # if cluster has more than one intron
+                buf = "%s:%s " % chrom
                 for interval, count in [(x, by_chrom[chrom][x]) for x in cl]:
-                    buf += "%d:%d" % interval + ":%d"%count+ " "
-                fout.write(buf+'\n')
+                    buf += "%d:%d" % interval + ":%d" % count + " "
+                fout.write(buf + "\n")
             Ncluster += 1
     sys.stderr.write("\nWrote %d clusters...\n" % Ncluster)
     fout.close()
@@ -90,17 +98,16 @@ def pool_junc_reads(flist, options):
 
 def sort_junctions(libl, options):
 
-    chromLst = ["chr%d"%x for x in range(1,23)]+['chrX','chrY']+["%d"%x for x in range(1,23)]+['X','Y']
+    chromLst = ["chr%d" % x for x in range(1, 23)] + ["chrX", "chrY"] + ["%d" % x for x in range(1, 23)] + ["X", "Y"]
     outPrefix = options.outprefix
     rundir = options.rundir
     nochromcheck = options.nochromcheck
 
     if options.cluster is None:
-        refined_cluster = "%s/%s_refined"%(rundir,outPrefix)
+        refined_cluster = "%s/%s_refined" % (rundir, outPrefix)
     else:
         refined_cluster = options.cluster
-    runName = "%s/%s"%(rundir, outPrefix)
-
+    runName = "%s/%s" % (rundir, outPrefix)
 
     exons, cluExons = {}, {}
     cluN = 0
@@ -112,14 +119,14 @@ def sort_junctions(libl, options):
             A, B, count = exon.split(":")
             if chrom not in exons:
                 exons[chrom] = {}
-            exons[chrom][(int(A),int(B))] = cluN
+            exons[chrom][(int(A), int(B))] = cluN
             if cluN not in cluExons:
                 cluExons[cluN] = []
             cluExons[cluN].append((chrom, A, B))
 
     merges = {}
     for ll in libl:
-        lib=ll.rstrip()
+        lib = ll.rstrip()
         if not os.path.isfile(lib):
             continue
         libN = lib
@@ -127,14 +134,14 @@ def sort_junctions(libl, options):
             merges[libN] = []
         merges[libN].append(lib)
 
-    fout_runlibs = open(runName+"_sortedlibs",'w')
+    fout_runlibs = open(runName + "_sortedlibs", "w")
 
-    for k,libN in enumerate(merges, 1):
-        libName = "%s/%s"%(rundir,libN.split('/')[-1])
+    for k, libN in enumerate(merges, 1):
+        libName = "%s/%s" % (rundir, libN.split("/")[-1])
         by_chrom = {}
-        foutName = libName+'.%s.sorted.gz'%(runName.split("/")[-1])
+        foutName = libName + ".%s.sorted.gz" % (runName.split("/")[-1])
 
-        fout_runlibs.write(foutName+'\n')
+        fout_runlibs.write(foutName + "\n")
 
         if options.verbose:
             sys.stderr.write("Sorting %d/%d: %s ...\n" % (k, len(merges), libN))
@@ -144,15 +151,15 @@ def sort_junctions(libl, options):
         else:
             pass
 
-        fout = gzip.open(foutName, 'wb')
-        header_string = "chrom %s\n"%libN.split("/")[-1].split(".junc")[0]
-        fout.write(header_string.encode('utf-8'))
+        fout = gzip.open(foutName, "wb")
+        header_string = "chrom %s\n" % libN.split("/")[-1].split(".junc")[0]
+        fout.write(header_string.encode("utf-8"))
 
         for lib in merges[libN]:
-            if lib.endswith('.gz'):
-                opener = gzip.open(lib, 'rt')
+            if lib.endswith(".gz"):
+                opener = gzip.open(lib, "rt")
             else:
-                opener = open(lib, 'r')
+                opener = open(lib, "r")
 
             for ln in opener:
                 lnsplit = ln.split()
@@ -164,10 +171,11 @@ def sort_junctions(libl, options):
                     print(ln)
                     continue
 
-                if not nochromcheck and (chrom not in chromLst): continue
+                if not nochromcheck and (chrom not in chromLst):
+                    continue
                 Aoff, Boff = blockSize.split(",")
-                A, B = int(A)+int(Aoff), int(B)-int(Boff)+1
-                chrom = (chrom,strand)
+                A, B = int(A) + int(Aoff), int(B) - int(Boff) + 1
+                chrom = (chrom, strand)
                 if chrom not in by_chrom:
                     by_chrom[chrom] = {}
                 intron = (A, B)
@@ -188,8 +196,8 @@ def sort_junctions(libl, options):
                 start, end = int(start), int(end)
                 if chrom not in by_chrom:
                     pass
-                elif (start,end) in by_chrom[chrom]:
-                    tot += by_chrom[chrom][(start,end)]
+                elif (start, end) in by_chrom[chrom]:
+                    tot += by_chrom[chrom][(start, end)]
             for exon in ks:
 
                 chrom, start, end = exon
@@ -197,15 +205,19 @@ def sort_junctions(libl, options):
                 chrom = tuple(chrom.split(":"))
                 chromID, strand = chrom
                 if chrom not in by_chrom:
-                    buf.append("%s:%d:%d:clu_%d_%s 0/%d\n"%(chromID,start, end,clu, strand, tot))
-                elif (start,end) in by_chrom[chrom]:
-                    buf.append("%s:%d:%d:clu_%d_%s %d/%d\n"%(chromID,start, end, clu,strand, by_chrom[chrom][(start,end)], tot))
+                    buf.append("%s:%d:%d:clu_%d_%s 0/%d\n" % (chromID, start, end, clu, strand, tot))
+                elif (start, end) in by_chrom[chrom]:
+                    buf.append(
+                        "%s:%d:%d:clu_%d_%s %d/%d\n"
+                        % (chromID, start, end, clu, strand, by_chrom[chrom][(start, end)], tot)
+                    )
                 else:
-                    buf.append("%s:%d:%d:clu_%d_%s 0/%d\n"%(chromID,start, end,clu,strand, tot))
+                    buf.append("%s:%d:%d:clu_%d_%s 0/%d\n" % (chromID, start, end, clu, strand, tot))
 
-            fout.write("".join(buf).encode('utf-8'))
+            fout.write("".join(buf).encode("utf-8"))
         fout.close()
     fout_runlibs.close()
+
 
 def refine_clusters(options):
 
@@ -214,9 +226,9 @@ def refine_clusters(options):
     minratio = float(options.mincluratio)
     minreads = int(options.minclureads)
 
-    inFile = "%s/%s_pooled"%(rundir,outPrefix)
-    outFile = "%s/%s_refined"%(rundir,outPrefix)
-    fout = open(outFile,'w')
+    inFile = "%s/%s_pooled" % (rundir, outPrefix)
+    outFile = "%s/%s_refined" % (rundir, outPrefix)
+    fout = open(outFile, "w")
 
     Ncl = 0
     for ln in open(inFile):
@@ -225,41 +237,42 @@ def refine_clusters(options):
         chrom = ln.split()[0]
         for ex in ln.split()[1:]:
             A, B, N = ex.split(":")
-            clu.append(((int(A),int(B)), int(N)))
+            clu.append(((int(A), int(B)), int(N)))
             totN += int(N)
 
-        if totN < minreads: continue
+        if totN < minreads:
+            continue
 
         if options.const:
             if len(clu) == 1:
-                buf = '%s ' % chrom
+                buf = "%s " % chrom
                 for interval, count in clu:
-                    buf += "%d:%d" % interval + ":%d"%(count)+ " "
+                    buf += "%d:%d" % interval + ":%d" % (count) + " "
                 Ncl += 1
-                fout.write(buf+'\n')
+                fout.write(buf + "\n")
 
         for cl in refine_linked(clu):
-            rc = refine_cluster(cl,minratio, minreads)
+            rc = refine_cluster(cl, minratio, minreads)
 
             if len(rc) > 0:
                 for clu in rc:
-                    buf = '%s ' % chrom
+                    buf = "%s " % chrom
                     for interval, count in clu:
-                        buf += "%d:%d" % interval + ":%d" % (count)+ " "
+                        buf += "%d:%d" % interval + ":%d" % (count) + " "
                     Ncl += 1
-                    fout.write(buf+'\n')
+                    fout.write(buf + "\n")
 
     sys.stderr.write("Split into %s clusters...\n" % Ncl)
     fout.close()
 
 
 def merge_junctions(options):
-    ''' function to merge junctions '''
+    """function to merge junctions"""
 
     outPrefix = options.outprefix
     rundir = options.rundir
-    fnameout = "%s/%s"%(rundir,outPrefix)
-    flist = "%s/%s_sortedlibs"%(rundir, outPrefix)
+    fnameout = "%s/%s" % (rundir, outPrefix)
+    flist = "%s/%s_sortedlibs" % (rundir, outPrefix)
 
     lsts = []
     for ln in open(flist):
@@ -268,24 +281,25 @@ def merge_junctions(options):
         sys.stderr.write("merging %d junction files...\n" % (len(lsts)))
 
     # Change 300 if max open file is < 300
-    N = min([300, max([100, int(len(lsts)**(0.5))])])
+    N = min([300, max([100, int(len(lsts) ** (0.5))])])
 
     tmpfiles = []
     while len(lsts) > 1:
         clst = []
 
-        for i in range(0,(len(lsts)//N)+1):
-            lst = lsts[N*i:N*(i+1)]
+        for i in range(0, (len(lsts) // N) + 1):
+            lst = lsts[N * i : N * (i + 1)]
             if len(lst) > 0:
                 clst.append(lst)
         lsts = []
 
         for lst in clst:
-            if len(lst) == 0: continue
+            if len(lst) == 0:
+                continue
             tmpfile = tempfile.mktemp()
             os.mkdir(tmpfile)
-            foutname = tmpfile+"/tmpmerge.gz"
-            fout = gzip.open(foutname,'w')
+            foutname = tmpfile + "/tmpmerge.gz"
+            fout = gzip.open(foutname, "w")
 
             merge_files(lst, fout, options)
             lsts.append(foutname)
@@ -293,9 +307,9 @@ def merge_junctions(options):
             fout.close()
 
     if not options.const:
-        shutil.move(lsts[0], fnameout+"_perind.counts.gz")
+        shutil.move(lsts[0], fnameout + "_perind.counts.gz")
     else:
-        shutil.move(lsts[0], fnameout+"_perind.constcounts.gz")
+        shutil.move(lsts[0], fnameout + "_perind.constcounts.gz")
 
 
 def merge_files(fnames, fout, options):
@@ -327,10 +341,10 @@ def merge_files(fnames, fout, options):
         if len(buf) > 0:
             if buf[0] == "chrom":
                 if options.verbose:
-                    sys.stderr.write("merging %d files" % (len(buf)-1))
+                    sys.stderr.write("merging %d files" % (len(buf) - 1))
 
-            out_string = " ".join(buf)+'\n'
-            fout.write(out_string.encode('utf-8'))
+            out_string = " ".join(buf) + "\n"
+            fout.write(out_string.encode("utf-8"))
         else:
             break
 
@@ -340,7 +354,7 @@ def merge_files(fnames, fout, options):
 
 
 def cluster_intervals(E):
-    ''' Clusters intervals together. '''
+    """Clusters intervals together."""
     E.sort()
     current = E[0]
     Eclusters, cluster = [], []
@@ -360,23 +374,25 @@ def cluster_intervals(E):
 
         Eclusters.append(cluster)
 
-
     return Eclusters, E
 
-def overlaps(A,B):
-    '''
+
+def overlaps(A, B):
+    """
     Checks if A and B overlaps
-    '''
+    """
 
     if A[1] < B[0] or B[1] < A[0]:
         return False
-    else: return True
+    else:
+        return True
+
 
 def refine_linked(clusters):
 
     unassigned = [x for x in clusters[1:]]
     current = [clusters[0]]
-    splicesites = set([current[0][0][0],current[0][0][1]])
+    splicesites = set([current[0][0][0], current[0][0][1]])
     newClusters = []
     while len(unassigned) > 0:
         finished = False
@@ -399,14 +415,14 @@ def refine_linked(clusters):
         current = []
         if len(unassigned) > 0:
             current = [unassigned[0]]
-            splicesites = set([current[0][0][0],current[0][0][1]])
+            splicesites = set([current[0][0][0], current[0][0][1]])
             unassigned = unassigned[1:]
     return newClusters
 
 
 def refine_cluster(clu, cutoff, readcutoff):
-    ''' for each exon in the cluster compute the ratio of reads, if smaller than cutoff,
-    remove and recluster '''
+    """for each exon in the cluster compute the ratio of reads, if smaller than cutoff,
+    remove and recluster"""
 
     remove = []
     dic = {}
@@ -418,18 +434,19 @@ def refine_cluster(clu, cutoff, readcutoff):
     for inter, count in clu:
         totN += count
     for inter, count in clu:
-        if (count/float(totN) >= cutoff and count >= readcutoff):
+        if count / float(totN) >= cutoff and count >= readcutoff:
             intervals.append(inter)
             dic[inter] = count
         else:
             reCLU = True
-    if len(intervals) == 0: return []
+    if len(intervals) == 0:
+        return []
 
     # This makes sure that after trimming, the clusters are still good
     Atmp, B = cluster_intervals(intervals)
     A = []
     for cl in Atmp:
-        for c in refine_linked([(x,0) for x in cl]):
+        for c in refine_linked([(x, 0) for x in cl]):
             if len(c) > 0:
                 A.append([x[0] for x in c])
 
@@ -456,29 +473,30 @@ def get_numers(options):
     rundir = options.rundir
 
     if not options.const:
-        fname = "%s/%s_perind.counts.gz"%(rundir,outPrefix)
-        fnameout = "%s/%s_perind_numers.counts.gz"%(rundir,outPrefix)
+        fname = "%s/%s_perind.counts.gz" % (rundir, outPrefix)
+        fnameout = "%s/%s_perind_numers.counts.gz" % (rundir, outPrefix)
     else:
-        fname = "%s/%s_perind.constcounts.gz"%(rundir,outPrefix)
-        fnameout = "%s/%s_perind_numers.constcounts.gz"%(rundir,outPrefix)
+        fname = "%s/%s_perind.constcounts.gz" % (rundir, outPrefix)
+        fnameout = "%s/%s_perind_numers.constcounts.gz" % (rundir, outPrefix)
 
-    input_file=gzip.open(fname, 'rt')
-    fout = gzip.open(fnameout,'w')
-    first_line=True
+    input_file = gzip.open(fname, "rt")
+    fout = gzip.open(fnameout, "w")
+    first_line = True
 
     for l in input_file:
         if first_line:
-            header_string = " ".join(l.strip().split(" ")[1:])+'\n'
-            fout.write(header_string.encode('utf-8')) # print the sample names
-            first_line=False
+            header_string = " ".join(l.strip().split(" ")[1:]) + "\n"
+            fout.write(header_string.encode("utf-8"))  # print the sample names
+            first_line = False
         else:
-            l=l.strip()
-            words=l.split(" ")
-            words_string = words[0]+ " "+ " ".join( [ g.split("/")[0] for g in words[1:] ] ) +'\n'
-            fout.write(words_string.encode('utf-8'))
+            l = l.strip()
+            words = l.split(" ")
+            words_string = words[0] + " " + " ".join([g.split("/")[0] for g in words[1:]]) + "\n"
+            fout.write(words_string.encode("utf-8"))
 
     input_file.close()
     fout.close()
+
 
 if __name__ == "__main__":
 
@@ -486,36 +504,63 @@ if __name__ == "__main__":
 
     parser = OptionParser()
 
-    parser.add_option("-j", "--juncfiles", dest="juncfiles",
-                  help="text file with all junction files to be processed")
+    parser.add_option("-j", "--juncfiles", dest="juncfiles", help="text file with all junction files to be processed")
 
-    parser.add_option("-o", "--outprefix", dest="outprefix", default = 'leafcutter',
-                  help="output prefix (default leafcutter)")
+    parser.add_option(
+        "-o", "--outprefix", dest="outprefix", default="leafcutter", help="output prefix (default leafcutter)"
+    )
 
-    parser.add_option("-q", "--quiet",
-                  action="store_false", dest="verbose", default=True,
-                  help="don't print status messages to stdout")
+    parser.add_option(
+        "-q",
+        "--quiet",
+        action="store_false",
+        dest="verbose",
+        default=True,
+        help="don't print status messages to stdout",
+    )
 
-    parser.add_option("-r", "--rundir", dest="rundir", default='./',
-                  help="write to directory (default ./)")
+    parser.add_option("-r", "--rundir", dest="rundir", default="./", help="write to directory (default ./)")
 
-    parser.add_option("-l", "--maxintronlen", dest="maxintronlen", default = 100000,
-                  help="maximum intron length in bp (default 100,000bp)")
+    parser.add_option(
+        "-l",
+        "--maxintronlen",
+        dest="maxintronlen",
+        default=100000,
+        help="maximum intron length in bp (default 100,000bp)",
+    )
 
-    parser.add_option("-m", "--minclureads", dest="minclureads", default = 30,
-                  help="minimum reads in a cluster (default 30 reads)")
+    parser.add_option(
+        "-m", "--minclureads", dest="minclureads", default=30, help="minimum reads in a cluster (default 30 reads)"
+    )
 
-    parser.add_option("-p", "--mincluratio", dest="mincluratio", default = 0.001,
-                  help="minimum fraction of reads in a cluster that support a junction (default 0.001)")
+    parser.add_option(
+        "-p",
+        "--mincluratio",
+        dest="mincluratio",
+        default=0.001,
+        help="minimum fraction of reads in a cluster that support a junction (default 0.001)",
+    )
 
-    parser.add_option("-c", "--cluster", dest="cluster", default = None,
-                  help="refined cluster file when clusters are already made")
+    parser.add_option(
+        "-c", "--cluster", dest="cluster", default=None, help="refined cluster file when clusters are already made"
+    )
 
-    parser.add_option("-k", "--nochromcheck", dest="nochromcheck", default = False,
-                  help="Don't check that the chromosomes are well formated e.g. chr1, chr2, ..., or 1, 2, ...")
+    parser.add_option(
+        "-k",
+        "--nochromcheck",
+        dest="nochromcheck",
+        default=False,
+        help="Don't check that the chromosomes are well formated e.g. chr1, chr2, ..., or 1, 2, ...",
+    )
 
-    parser.add_option("-C", "--includeconst", dest="const", action="store_true", default = False,
-                  help="also include constitutive introns")
+    parser.add_option(
+        "-C",
+        "--includeconst",
+        dest="const",
+        action="store_true",
+        default=False,
+        help="also include constitutive introns",
+    )
 
     (options, args) = parser.parse_args()
 
