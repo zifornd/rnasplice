@@ -30,6 +30,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - Pseudo-alignment and quantification.
   - [Salmon](#salmon) - Wicked fast gene and isoform quantification relative to the transcriptome
+- Leafcutter(#leafcutter) - Quantification of splicing with Leafcutter.
 - Differential Exon Usage (DEU).
   - [DEXSeq](#dexseq) - For differential exon usage analysis following quantification with HTSeq.
   - [edgeR](#edger) - For differential exon usage (includes differential exon expression) following quantification with featureCounts
@@ -294,6 +295,18 @@ This workflow will also produce a `suppa_tpm.txt` which is a tab delimitated tex
 **NB:** As described by the [nf-core/rnaseq](https://github.com/nf-core/rnaseq) pipeline: "The default Salmon parameters and a k-mer size of 31 are used to create the index. As [documented here](https://salmon.readthedocs.io/en/latest/salmon.html#preparing-transcriptome-indices-mapping-based-mode) and [discussed here](https://github.com/COMBINE-lab/salmon/issues/482#issuecomment-583799668), a k-mer size off 31 works well with reads that are 75bp or longer".
 
 **NB:** As described by the [nf-core/rnaseq](https://github.com/nf-core/rnaseq) pipeline: "Transcripts with large inferential uncertainty won't be assigned the exact number of reads reproducibly, every time Salmon is run. Read more about this on the [nf-core/rnaseq](https://github.com/nf-core/rnaseq/issues/585) and [salmon](https://github.com/COMBINE-lab/salmon/issues/613) Github repos".
+
+## Splicing quantification
+
+### Leafcutter
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `leafcutter`
+  - `*junc`: all junctions found in each sample and their abundances.
+  - `*numers.counts.gz`: Each column corresponds to a different sample (original bam file) and each row to an intron, which are identified as chromosome:intron_start:intron_end:cluster_id. This is the file to use for downstream analysis.
+  - `*counts.gz`: Same than before but with the ratio of that event.
 
 ## Differential Exon Usage (DEU)
 

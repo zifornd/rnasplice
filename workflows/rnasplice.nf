@@ -460,12 +460,15 @@ workflow RNASPLICE {
         }
 
         if(params.leafcutter == true){
+            // ch_genome_bam_index.view()
+            // ch_leafcutter = ch_genome_bam.join(ch_genome_bam_index)
+            //     .view()
             LEAFCUTTER(
                 ch_genome_bam,
-                ch_genome_bai,
-                ch_samplesheet
+                ch_genome_bam_index,
+                PREPARE_GENOME.out.gtf
             )
-            ch_versions = ch_versions.mix(LEAFCUTTER.out.versions)
+            // ch_versions = ch_versions.mix(LEAFCUTTER.out.versions)
         }
 
     }

@@ -593,6 +593,18 @@
             },
             "fa_icon": "far fa-chart-bar"
         },
+        "leafcutter_options": {
+            "title": "Leafcutter options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "leafcutter": {
+                    "type": "boolean",
+                    "description": "Run Leafcutter annotation workflow."
+                }
+            }
+        },
         "dexseq_dtu_options": {
             "title": "DEXSeq DTU options",
             "type": "object",
