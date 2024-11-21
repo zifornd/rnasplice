@@ -484,6 +484,18 @@
                 }
             }
         },
+        "leafcutter_options": {
+            "title": "Leafcutter options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "leafcutter": {
+                    "type": "boolean",
+                    "description": "Run Leafcutter annotation workflow."
+                }
+            }
+        },
         "rmats_options": {
             "type": "object",
             "title": "rMATS options",
@@ -592,18 +604,6 @@
                 }
             },
             "fa_icon": "far fa-chart-bar"
-        },
-        "leafcutter_options": {
-            "title": "Leafcutter options",
-            "type": "object",
-            "description": "",
-            "default": "",
-            "properties": {
-                "leafcutter": {
-                    "type": "boolean",
-                    "description": "Run Leafcutter annotation workflow."
-                }
-            }
         },
         "dexseq_dtu_options": {
             "title": "DEXSeq DTU options",
@@ -877,6 +877,9 @@
         },
         {
             "$ref": "#/definitions/alignment_options"
+        },
+        {
+            "$ref": "#/definitions/leafcutter_options"
         },
         {
             "$ref": "#/definitions/rmats_options"
