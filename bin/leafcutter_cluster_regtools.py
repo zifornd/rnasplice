@@ -34,12 +34,12 @@ def pool_junc_reads(flist, options):
     # check that all files exist
     for libl in flist:
         if not os.path.isfile(libl.strip()):
-            raise ValueError("File %s does not exist."%lib)
+            raise ValueError("File %s does not exist." % lib)
 
     for k,libl in enumerate(flist, 1):
         lib = libl.strip()
         if options.verbose:
-            sys.stderr.write("scanning %d/%d: %s ...\n"%(k, len(flist), lib))
+            sys.stderr.write("scanning %d/%d: %s ...\n" % (k, len(flist), lib))
 
         if lib.endswith('.gz'):
             opener = gzip.open(lib, 'rt')
@@ -73,7 +73,7 @@ def pool_junc_reads(flist, options):
     for chrom in by_chrom:
         read_ks = [k for k,v in list(by_chrom[chrom].items()) if v >= 3] # a junction must have at least 3 reads
         read_ks.sort()
-        sys.stderr.write("%s:%s.."%chrom)
+        sys.stderr.write("%s:%s.." % chrom)
         if len(read_ks) == 0:
              continue # weird test case for toy data with only 1 gene - two chroms but one is empty after filtering
         clu = cluster_intervals(read_ks)[0]
@@ -84,7 +84,7 @@ def pool_junc_reads(flist, options):
                     buf += "%d:%d" % interval + ":%d"%count+ " "
                 fout.write(buf+'\n')
             Ncluster += 1
-    sys.stderr.write("\nWrote %d clusters...\n"%Ncluster)
+    sys.stderr.write("\nWrote %d clusters...\n" % Ncluster)
     fout.close()
 
 
@@ -137,10 +137,10 @@ def sort_junctions(libl, options):
         fout_runlibs.write(foutName+'\n')
 
         if options.verbose:
-            sys.stderr.write("Sorting %d/%d: %s ...\n"%(k, len(merges), libN))
+            sys.stderr.write("Sorting %d/%d: %s ...\n" % (k, len(merges), libN))
         if len(merges[libN]) > 1:
             if options.verbose:
-                sys.stderr.write("merging %s...\n"%(" ".join(merges[libN])))
+                sys.stderr.write("merging %s...\n" % (" ".join(merges[libN])))
         else:
             pass
 
@@ -245,11 +245,11 @@ def refine_clusters(options):
                 for clu in rc:
                     buf = '%s ' % chrom
                     for interval, count in clu:
-                        buf += "%d:%d" % interval + ":%d"%(count)+ " "
+                        buf += "%d:%d" % interval + ":%d" % (count)+ " "
                     Ncl += 1
                     fout.write(buf+'\n')
 
-    sys.stderr.write("Split into %s clusters...\n"%Ncl)
+    sys.stderr.write("Split into %s clusters...\n" % Ncl)
     fout.close()
 
 
@@ -265,7 +265,7 @@ def merge_junctions(options):
     for ln in open(flist):
         lsts.append(ln.strip())
     if options.verbose:
-        sys.stderr.write("merging %d junction files...\n"%(len(lsts)))
+        sys.stderr.write("merging %d junction files...\n" % (len(lsts)))
 
     # Change 300 if max open file is < 300
     N = min([300, max([100, int(len(lsts)**(0.5))])])
@@ -327,7 +327,7 @@ def merge_files(fnames, fout, options):
         if len(buf) > 0:
             if buf[0] == "chrom":
                 if options.verbose:
-                    sys.stderr.write("merging %d files"%(len(buf)-1))
+                    sys.stderr.write("merging %d files" % (len(buf)-1))
 
             out_string = " ".join(buf)+'\n'
             fout.write(out_string.encode('utf-8'))
@@ -530,7 +530,7 @@ if __name__ == "__main__":
         try:
             open(junc)
         except:
-            sys.stderr.write("%s does not exist... check your junction files.\n"%junc)
+            sys.stderr.write("%s does not exist... check your junction files.\n" % junc)
             exit(0)
         libl.append(junc)
 
