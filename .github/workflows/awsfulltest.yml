@@ -27,9 +27,14 @@ jobs:
               "outdir": "s3://${{ secrets.AWS_S3_BUCKET }}/rnasplice/results-${{ github.sha }}"
             }
           profiles: test_full
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tower_action_*.{log,json}
+          path: |
+            tower_action_*.{log,json}
+            
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
         with:
           name: Tower debug log file
-          path: |
-            tower_action_*.log
-            tower_action_*.json
+          pattern: tower_action_*.{log,json}

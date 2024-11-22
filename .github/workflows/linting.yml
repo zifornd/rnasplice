@@ -99,10 +99,16 @@ jobs:
 
       - name: Upload linting log file artifact
         if: ${{ always() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint_log.txt,lint_results.md,PR_number.txt
+          path: |
+            lint_log.txt,lint_results.md,PR_number.txt
+            
+      - name: Merge Artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact/merge@v4
         with:
           name: linting-logs
-          path: |
-            lint_log.txt
-            lint_results.md
-            PR_number.txt
+          pattern: lint_log.txt,lint_results.md,PR_number.txt
+
