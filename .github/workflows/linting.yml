@@ -106,6 +106,7 @@ jobs:
             lint_log.txt,lint_results.md,PR_number.txt
             
       - name: Merge Artifacts
+        if: ${{ always() }}
         uses: actions/upload-artifact/merge@v4
         with:
           name: linting-logs
