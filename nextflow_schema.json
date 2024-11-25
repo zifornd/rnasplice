@@ -438,6 +438,7 @@
                 "aligner": {
                     "type": "string",
                     "default": "star_salmon",
+                    "enum": ["star_salmon", "star"],
                     "description": "Specifies the alignment algorithm to use - available options are 'star_salmon', or 'star'.",
                     "fa_icon": "fas fa-map-signs"
                 },

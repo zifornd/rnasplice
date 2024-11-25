@@ -303,7 +303,7 @@ This workflow will also produce a `suppa_tpm.txt` which is a tab delimitated tex
 <details markdown="1">
 <summary>Output files</summary>
 
-- `leafcutter`
+- [`leafcutter`](https://davidaknowles.github.io/leafcutter/): Leafcutter quantifies RNA splicing variation using short-read RNA-seq data. The core idea is to leverage spliced reads (reads that span an intron) to quantify (differential) intron usage across samples.
   - `*junc`: all junctions found in each sample and their abundances.
   - `*numers.counts.gz`: Each column corresponds to a different sample (original bam file) and each row to an intron, which are identified as chromosome:intron_start:intron_end:cluster_id. This is the file to use for downstream analysis.
   - `*counts.gz`: Same than before but with the ratio of that event.
