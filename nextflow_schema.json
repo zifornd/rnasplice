@@ -669,6 +669,7 @@
                     "type": "string",
                     "default": "ENSG00000004961, ENSG00000005302, ENSG00000147403",
                     "description": "List containing identifiers of genes to plot."
+                    "pattern": "^[\\w-]+(,\\s+[\\w-]+)*$"
                 },
                 "miso_genes_file": {
                     "type": "string",
