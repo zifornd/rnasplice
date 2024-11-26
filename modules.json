@@ -40,6 +40,11 @@
                         "git_sha": "4ab13872435962dadc239979554d13709e20bf29",
                         "installed_by": ["modules"]
                     },
+                    "regtools/junctionsextract": {
+                        "branch": "master",
+                        "git_sha": "0461b3edd7e9e3f4c8047cf12b54a791eb735e38",
+                        "installed_by": ["modules"]
+                    },
                     "rsem/preparereference": {
                         "branch": "master",
                         "git_sha": "603ecbd9f45300c9788f197d2a15a005685b4220",

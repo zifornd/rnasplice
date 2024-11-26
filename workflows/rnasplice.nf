@@ -93,6 +93,7 @@ include { EDGER_DEU                                            } from '../subwor
 include { SUPPA as SUPPA_SALMON                                } from '../subworkflows/local/suppa'
 include { SUPPA as SUPPA_STAR_SALMON                           } from '../subworkflows/local/suppa'
 include { VISUALISE_MISO                                       } from '../subworkflows/local/visualise_miso'
+include { LEAFCUTTER                                           } from '../subworkflows/local/leafcutter'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -456,6 +457,18 @@ workflow RNASPLICE {
 
             ch_versions = ch_versions.mix(VISUALISE_MISO.out.versions)
 
+        }
+
+        if(params.leafcutter == true){
+            // ch_genome_bam_index.view()
+            // ch_leafcutter = ch_genome_bam.join(ch_genome_bam_index)
+            //     .view()
+            LEAFCUTTER(
+                ch_genome_bam,
+                ch_genome_bam_index,
+                PREPARE_GENOME.out.gtf
+            )
+            // ch_versions = ch_versions.mix(LEAFCUTTER.out.versions)
         }
 
     }

@@ -145,7 +145,7 @@
                     "type": "string",
                     "format": "directory-path",
                     "description": "Directory / URL base for iGenomes references.",
-                    "default": "s3://ngi-igenomes/igenomes",
+                    "default": "s3://ngi-igenomes/igenomes/",
                     "fa_icon": "fas fa-cloud-download-alt",
                     "hidden": true
                 },
@@ -437,7 +437,8 @@
             "properties": {
                 "aligner": {
                     "type": "string",
-                    "default": "star",
+                    "default": "star_salmon",
+                    "enum": ["star_salmon", "star"],
                     "description": "Specifies the alignment algorithm to use - available options are 'star_salmon', or 'star'.",
                     "fa_icon": "fas fa-map-signs"
                 },
@@ -481,6 +482,18 @@
                     "type": "boolean",
                     "description": "Save the intermediate BAM files from the alignment step.",
                     "help_text": "By default, intermediate BAM files will not be saved. The final BAM files created after the appropriate filtering step are always saved to limit storage usage. Set this parameter to also save other intermediate BAM files."
+                }
+            }
+        },
+        "leafcutter_options": {
+            "title": "Leafcutter options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "leafcutter": {
+                    "type": "boolean",
+                    "description": "Run Leafcutter annotation workflow."
                 }
             }
         },
@@ -611,17 +624,17 @@
                 },
                 "min_samps_gene_expr": {
                     "type": "integer",
-                    "default": 6,
+                    "default": 4,
                     "description": "Minimal number of samples where genes should be expressed."
                 },
                 "min_samps_feature_expr": {
                     "type": "integer",
-                    "default": 0,
+                    "default": 2,
                     "description": "Minimal number of samples where features should be expressed."
                 },
                 "min_samps_feature_prop": {
                     "type": "integer",
-                    "default": 0,
+                    "default": 2,
                     "description": "Minimal proportion of samples where features should be expressed."
                 },
                 "min_gene_expr": {
@@ -654,8 +667,9 @@
                 },
                 "miso_genes": {
                     "type": "string",
-                    "default": "ENSG00000004961, ENSG00000005302",
-                    "description": "List containing identifiers of genes to plot."
+                    "default": "ENSG00000004961, ENSG00000005302, ENSG00000147403",
+                    "description": "List containing identifiers of genes to plot.",
+                    "pattern": "^[\\w-]+(,\\s+[\\w-]+)*$"
                 },
                 "miso_genes_file": {
                     "type": "string",
@@ -865,6 +879,9 @@
         },
         {
             "$ref": "#/definitions/alignment_options"
+        },
+        {
+            "$ref": "#/definitions/leafcutter_options"
         },
         {
             "$ref": "#/definitions/rmats_options"
