@@ -1,10 +1,10 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/nf-core/rnasplice/master/nextflow_schema.json",
     "title": "nf-core/rnasplice pipeline parameters",
     "description": "Alternative splicing analysis using RNA-seq.",
     "type": "object",
-    "definitions": {
+    "$defs": {
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -206,41 +206,6 @@
                 }
             }
         },
-        "max_job_request_options": {
-            "title": "Max job request options",
-            "type": "object",
-            "fa_icon": "fab fa-acquisitions-incorporated",
-            "description": "Set the top limit for requested resources for any single job.",
-            "help_text": "If you are running on a smaller system, a pipeline step requesting more resources than are available may cause the Nextflow to stop the run with an error. These options allow you to cap the maximum resources requested by any single job so that the pipeline will run on your system.\n\nNote that you can not _increase_ the resources requested by any job using these options. For that you will need your own configuration file. See [the nf-core website](https://nf-co.re/usage/configuration) for details.",
-            "properties": {
-                "max_cpus": {
-                    "type": "integer",
-                    "description": "Maximum number of CPUs that can be requested for any single job.",
-                    "default": 16,
-                    "fa_icon": "fas fa-microchip",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the CPU requirement for each process. Should be an integer e.g. `--max_cpus 1`"
-                },
-                "max_memory": {
-                    "type": "string",
-                    "description": "Maximum amount of memory that can be requested for any single job.",
-                    "default": "128.GB",
-                    "fa_icon": "fas fa-memory",
-                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the memory requirement for each process. Should be a string in the format integer-unit e.g. `--max_memory '8.GB'`"
-                },
-                "max_time": {
-                    "type": "string",
-                    "description": "Maximum amount of time that can be requested for any single job.",
-                    "default": "240.h",
-                    "fa_icon": "far fa-clock",
-                    "pattern": "^(\\d+\\.?\\s*(s|m|h|d|day)\\s*)+$",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
-                }
-            }
-        },
         "generic_options": {
             "title": "Generic options",
             "type": "object",
@@ -328,27 +293,6 @@
                     "default": true,
                     "fa_icon": "fas fa-check-square",
                     "hidden": true
-                },
-                "validationShowHiddenParams": {
-                    "type": "boolean",
-                    "fa_icon": "far fa-eye-slash",
-                    "description": "Show all params when using `--help`",
-                    "hidden": true,
-                    "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
-                },
-                "validationFailUnrecognisedParams": {
-                    "type": "boolean",
-                    "fa_icon": "far fa-check-circle",
-                    "description": "Validation of parameters fails when an unrecognised parameter is found.",
-                    "hidden": true,
-                    "help_text": "By default, when an unrecognised parameter is found, it returns a warinig."
-                },
-                "validationLenientMode": {
-                    "type": "boolean",
-                    "fa_icon": "far fa-check-circle",
-                    "description": "Validation of parameters in lenient more.",
-                    "hidden": true,
-                    "help_text": "Allows string values that are parseable as numbers or booleans. For further information see [JSONSchema docs](https://github.com/everit-org/json-schema#lenient-mode)."
                 }
             }
         },
@@ -504,7 +448,8 @@
             "properties": {
                 "rmats": {
                     "type": "boolean",
-                    "description": "Run rMATS workflow."
+                    "description": "Run rMATS workflow.",
+                    "default": true
                 },
                 "rmats_splice_diff_cutoff": {
                     "type": "number",
@@ -546,7 +491,8 @@
             "properties": {
                 "dexseq_exon": {
                     "type": "boolean",
-                    "description": "Run DEXSeq differential exon usage workflow."
+                    "description": "Run DEXSeq differential exon usage workflow.",
+                    "default": true
                 },
                 "save_dexseq_annotation": {
                     "type": "boolean",
@@ -591,7 +537,8 @@
             "properties": {
                 "edger_exon": {
                     "type": "boolean",
-                    "description": "Run edgeR workflow."
+                    "description": "Run edgeR workflow.",
+                    "default": true
                 },
                 "save_edger_plot": {
                     "type": "boolean",
@@ -614,7 +561,8 @@
             "properties": {
                 "dexseq_dtu": {
                     "type": "boolean",
-                    "description": "Run DEXSeq differential transcript usage workflow."
+                    "description": "Run DEXSeq differential transcript usage workflow.",
+                    "default": true
                 },
                 "dtu_txi": {
                     "type": "string",
@@ -663,7 +611,8 @@
             "properties": {
                 "sashimi_plot": {
                     "type": "boolean",
-                    "description": "Create sashimi plots using MISO."
+                    "description": "Create sashimi plots using MISO.",
+                    "default": true
                 },
                 "miso_genes": {
                     "type": "string",
@@ -853,53 +802,76 @@
                 }
             },
             "fa_icon": "far fa-chart-bar"
+        },
+        "isoformswitchanalyzer": {
+            "title": "isoformswitchanalyzer options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "isoformswitchanalyzer": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Run isoformswitchanalyzer workflow."
+                },
+                "isoformswitchanalyzer_alpha": {
+                    "type": "number",
+                    "default": 0.05,
+                    "description": "alpha value for differential isoform expression"
+                },
+                "isoformswitchanalyzer_dIF": {
+                    "type": "number",
+                    "default": 0.1,
+                    "description": "dIF cutoff value for differential isoform expression"
+                }
+            }
         }
     },
     "allOf": [
         {
-            "$ref": "#/definitions/input_output_options"
+            "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/definitions/reference_genome_options"
+            "$ref": "#/$defs/reference_genome_options"
         },
         {
-            "$ref": "#/definitions/institutional_config_options"
+            "$ref": "#/$defs/institutional_config_options"
         },
         {
-            "$ref": "#/definitions/max_job_request_options"
+            "$ref": "#/$defs/generic_options"
         },
         {
-            "$ref": "#/definitions/generic_options"
+            "$ref": "#/$defs/read_trimming_options"
         },
         {
-            "$ref": "#/definitions/read_trimming_options"
+            "$ref": "#/$defs/qc_options"
         },
         {
-            "$ref": "#/definitions/qc_options"
+            "$ref": "#/$defs/alignment_options"
         },
         {
-            "$ref": "#/definitions/alignment_options"
+            "$ref": "#/$defs/leafcutter_options"
         },
         {
-            "$ref": "#/definitions/leafcutter_options"
+            "$ref": "#/$defs/rmats_options"
         },
         {
-            "$ref": "#/definitions/rmats_options"
+            "$ref": "#/$defs/dexseq_deu_options"
         },
         {
-            "$ref": "#/definitions/dexseq_deu_options"
+            "$ref": "#/$defs/edger_deu_options"
         },
         {
-            "$ref": "#/definitions/edger_deu_options"
+            "$ref": "#/$defs/dexseq_dtu_options"
         },
         {
-            "$ref": "#/definitions/dexseq_dtu_options"
+            "$ref": "#/$defs/miso"
         },
         {
-            "$ref": "#/definitions/miso"
+            "$ref": "#/$defs/suppa_options"
         },
         {
-            "$ref": "#/definitions/suppa_options"
+            "$ref": "#/$defs/isoformswitchanalyzer"
         }
     ]
 }

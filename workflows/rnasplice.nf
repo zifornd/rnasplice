@@ -4,21 +4,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-def valid_params = [
-    aligners       : ['star', 'star_salmon'],
-    pseudoaligners : ['salmon']
-]
+include { paramsSummaryLog; paramsSummaryMap } from 'plugin/nf-schema'
 
-include { paramsSummaryLog; paramsSummaryMap } from 'plugin/nf-validation'
-
-def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
-def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
 def summary_params = paramsSummaryMap(workflow)
-
-// Print parameter summary log to screen
-log.info logo + paramsSummaryLog(workflow) + citation
-
-WorkflowRnasplice.initialise(params, log, valid_params)
 
 // Check input path parameters to see if they exist
 def checkPathParamList = [
@@ -75,6 +63,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 // MODULE: Loaded from modules/local/
 //
 include { BEDTOOLS_GENOMECOV      } from '../modules/local/bedtools_genomecov'
+include { ISOFORMSWITCHANALYZER   } from '../modules/local/isoformswitchanalyzer'
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -95,6 +84,11 @@ include { SUPPA as SUPPA_STAR_SALMON                           } from '../subwor
 include { VISUALISE_MISO                                       } from '../subworkflows/local/visualise_miso'
 include { LEAFCUTTER                                           } from '../subworkflows/local/leafcutter'
 
+include { rmatsReadError                 } from '../subworkflows/local/utils_nfcore_rnasplice_pipeline'
+include { rmatsStrandednessError         } from '../subworkflows/local/utils_nfcore_rnasplice_pipeline'
+include { isSingleCondition              } from '../subworkflows/local/utils_nfcore_rnasplice_pipeline'
+include { paramsSummaryMultiqc           } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText         } from '../subworkflows/local/utils_nfcore_rnasplice_pipeline'
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -226,8 +220,8 @@ workflow RNASPLICE {
 
     // Check rMATS parameters specified correctly
     if (params.rmats && params.source == 'fastq') {
-            WorkflowRnasplice.rmatsReadError(INPUT_CHECK.out.reads, log)
-            WorkflowRnasplice.rmatsStrandednessError(INPUT_CHECK.out.reads, log)
+            rmatsReadError(INPUT_CHECK.out.reads)
+            rmatsStrandednessError(INPUT_CHECK.out.reads)
     }
 
     //
@@ -278,7 +272,7 @@ workflow RNASPLICE {
             .map {
                 tsv_data ->
                     def header = ["Sample", "Reads after trimming"]
-                    WorkflowRnasplice.multiqcTsvFromList(tsv_data, header)
+                    multiqcTsvFromList(tsv_data, header)
             }
             .set { ch_fail_trimming_multiqc }
 
@@ -419,7 +413,7 @@ workflow RNASPLICE {
             // Create variable to check if samples have one condition or two
             //
 
-            is_single_condition = WorkflowRnasplice.isSingleCondition(ch_input)
+            is_single_condition = isSingleCondition(ch_input)
 
             //
             // SUBWORKFLOW: Run rMATS
@@ -709,8 +703,27 @@ workflow RNASPLICE {
             ch_versions = ch_versions.mix(SUPPA_SALMON.out.versions)
 
         }
-
     }
+
+    //
+    // MODULE: ISOFORMSWITCHANALYZER
+    //
+    if (params.isoformswitchanalyzer && (params.source == 'fastq' || params.source == 'salmon_results')) {
+
+        // Run IsoformSwitchAnalyzeR
+        ISOFORMSWITCHANALYZER(
+            ch_salmon_results.collect{ it[1] },
+            PREPARE_GENOME.out.gtf,
+            PREPARE_GENOME.out.transcript_fasta,
+            ch_samplesheet,
+            ch_contrastsheet,
+            params.isoformswitchanalyzer_alpha,
+            params.isoformswitchanalyzer_dIF
+        )
+
+        ch_versions = ch_versions.mix(ISOFORMSWITCHANALYZER.out.versions)
+    }
+
 
     //
     // MODULE: Genome-wide coverage with BEDTools
@@ -750,10 +763,10 @@ workflow RNASPLICE {
     // MODULE: MultiQC
     //
 
-    workflow_summary    = WorkflowRnasplice.paramsSummaryMultiqc(workflow, summary_params)
+    workflow_summary    = paramsSummaryMultiqc(summary_params)
     ch_workflow_summary = Channel.value(workflow_summary)
 
-    methods_description    = WorkflowRnasplice.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description, params)
+    methods_description    = methodsDescriptionText(ch_multiqc_custom_methods_description)
     ch_methods_description = Channel.value(methods_description)
 
     ch_multiqc_files = Channel.empty()
@@ -806,23 +819,9 @@ workflow RNASPLICE {
         ch_multiqc_logo.toList()
     )
     multiqc_report = MULTIQC.out.report.toList()
-}
 
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    COMPLETION EMAIL AND SUMMARY
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-workflow.onComplete {
-    if (params.email || params.email_on_fail) {
-        NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
-    }
-    NfcoreTemplate.dump_parameters(workflow, params)
-    NfcoreTemplate.summary(workflow, params, log)
-    if (params.hook_url) {
-        NfcoreTemplate.IM_notification(workflow, params, summary_params, projectDir, log)
-    }
+    emit:
+    final_multiqc_report = multiqc_report
 }
 
 /*
