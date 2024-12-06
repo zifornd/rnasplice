@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated to remove max_memory, max_cpus, max_time and replace with process resourceLimits.
 - Updated for nf-core template version 3.0.2.
 - Updated to remove lib folder and add utils subworkflows.
+
 ## Dev v1.0.5dev - TBD - TBD
 
 - Add first steps of leafcutter splicing quantification
